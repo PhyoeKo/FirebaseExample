@@ -3,6 +3,9 @@ package com.example.firebaseexample;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -39,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
 
     private String userId;
 
+    private FirebaseAuth auth;
+    //for google SignOut
+    private GoogleSignInClient googleSignInClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,6 +55,16 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
+        //Get Firebase auth instance
+        auth = FirebaseAuth.getInstance();
+
+        //for Google Login
+        // Configure Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, gso);
 
         txtDetails = findViewById(R.id.txt_user);
         inputName = findViewById(R.id.name);
@@ -102,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View view) {
+                signOutGoogle();
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(getApplicationContext(),LoginActivity.class));
                 Toast.makeText(getApplicationContext(),"Successfully Logout",Toast.LENGTH_LONG).show();
@@ -178,6 +196,20 @@ public class MainActivity extends AppCompatActivity {
 
         if (!TextUtils.isEmpty(email))
             mFirebaseDatabase.child(userId).child("email").setValue(email);
+    }
+
+    private void signOutGoogle() {
+        // Firebase sign out
+        auth.signOut();
+
+        // Google sign out
+        googleSignInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                    }
+                });
     }
 
 }
